@@ -1,11 +1,18 @@
 import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions"
-import { Connection, PublicKey, SystemProgram, Transaction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js"
-import { NextApiRequest } from "next";
+import { Connection, PublicKey, SystemProgram, Transaction, clusterApiUrl } from "@solana/web3.js"
 import axios from "axios";
 
 export const GET = async (req: Request) => {
     const url = new URL(req.url!);
     const userParams = url.searchParams.get("user");
+
+    const errorPayload: ActionGetResponse = {
+        icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
+        label: `Wallet or username Not Found`,
+        description: `Not a valid user`,
+        title: `Try again with a valid wallet address`,
+    }
+
     console.log("User Params:", userParams);
     if (userParams) {
         const parts = userParams.split("-");
@@ -14,14 +21,8 @@ export const GET = async (req: Request) => {
 
         const user = await getGHProfile(username!);
         if (!address || !username) {
-            const payload: ActionGetResponse = {
-                icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
-                label: `Wallet or username Not Found`,
-                description: `Not a valid user`,
-                title: `Try again with a valid wallet address`,
-            }
 
-            return Response.json(payload, {
+            return Response.json(errorPayload, {
                 headers: ACTIONS_CORS_HEADERS
             })
         }
@@ -29,14 +30,8 @@ export const GET = async (req: Request) => {
         const nfts = await topNFTs(address!);
 
         if (!user.login) {
-            const payload: ActionGetResponse = {
-                icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
-                label: `User Not Found`,
-                description: `Not a valid user ${username}`,
-                title: `Try again with a valid user`,
-            }
 
-            return Response.json(payload, {
+            return Response.json(errorPayload, {
                 headers: ACTIONS_CORS_HEADERS
             })
         }
@@ -54,14 +49,8 @@ export const GET = async (req: Request) => {
             headers: ACTIONS_CORS_HEADERS
         })
     } else {
-        const payload: ActionGetResponse = {
-            icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
-            label: `Wallet or username Not Found`,
-            description: `Not a valid user`,
-            title: `Try again with a valid wallet address`,
-        }
-
-        return Response.json(payload, {
+      
+        return Response.json(errorPayload, {
             headers: ACTIONS_CORS_HEADERS
         })
     }
