@@ -3,7 +3,7 @@ import { Connection, PublicKey, SystemProgram, Transaction, TransactionMessage, 
 import { NextApiRequest } from "next";
 import axios from "axios";
 
-export const GET = async (req: NextApiRequest) => {
+export const GET = async (req: Request) => {
     const url = new URL(req.url!);
     const userName = url.searchParams.get("username");
     const address = url.searchParams.get("address");
