@@ -1,5 +1,5 @@
-import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest } from "@solana/actions"
-import { Connection, PublicKey, SystemProgram, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js"
+import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions"
+import { Connection, PublicKey, SystemProgram, Transaction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js"
 import { NextApiRequest } from "next";
 import axios from "axios";
 
@@ -43,7 +43,7 @@ export const GET = async (req: NextApiRequest) => {
         icon: user.avatar_url,
         label: `Checking status for ${user.name}`,
         description: `${user.login} has ${events.length} contribution on github in last week`,
-        title: events.length > 10 && nfts > 4 ? `${user.login} is a chad solana dev!` : `Inactive Contributor`,
+        title: events.length > 10 && nfts > 4 ? `${user.login} is a chad dev!` : `Inactive Contributor`,
     }
 
     return Response.json(payload, {
@@ -71,22 +71,34 @@ export const POST = async (req: Request) => {
                 headers: ACTIONS_CORS_HEADERS
             })
         }
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: new PublicKey(account),
+                toPubkey: new PublicKey(receiver!),
+                lamports: 100000,
+            }),
+        );
 
-        const transferIx = SystemProgram.transfer({
-            fromPubkey: account,
-            toPubkey: new PublicKey("receiver"),
-            lamports: 10000000, // 0.1 sol
-        });
+        transaction.feePayer = new PublicKey(account);
+        const latestBlockhash = await connection.getLatestBlockhash();
 
-        const blockhash = await connection
-            .getLatestBlockhash({ commitment: "max" })
-            .then((res) => res.blockhash);
-        const messageV0 = new TransactionMessage({
-            payerKey: account,
-            recentBlockhash: blockhash,
-            instructions: [transferIx],
-        }).compileToV0Message();
-        return new VersionedTransaction(messageV0);
+        transaction!.recentBlockhash = latestBlockhash.blockhash;
+        transaction!.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
+
+        try {
+            transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+            const payload: ActionPostResponse = await createPostResponse({
+                fields: {
+                    transaction,
+                    message: 'Chad devs supports each other'
+                }
+            })
+
+            return Response.json(payload, { headers: ACTIONS_CORS_HEADERS })
+        } catch (error) {
+            console.log("error", error);
+        }
 
     } catch (err) {
         return Response.json("unkown error", { status: 400 })
