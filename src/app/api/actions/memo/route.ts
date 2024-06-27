@@ -85,7 +85,7 @@ export const POST = async (req: Request) => {
             SystemProgram.transfer({
                 fromPubkey: new PublicKey(account),
                 toPubkey: new PublicKey(receiver!),
-                lamports: 100000,
+                lamports: 100000000,
             }),
         );
 
