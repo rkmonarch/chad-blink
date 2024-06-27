@@ -5,11 +5,55 @@ import axios from "axios";
 
 export const GET = async (req: Request) => {
     const url = new URL(req.url!);
-    const userName = url.searchParams.get("username");
-    const address = url.searchParams.get("address");
+    const userParams = url.searchParams.get("user");
+    console.log("User Params:", userParams);
+    if (userParams) {
+        const parts = userParams.split("-");
+        const username = parts[0];
+        const address = parts.slice(1).join("-");
 
-    const user = await getGHProfile(userName!);
-    if (!address || !userName) {
+        const user = await getGHProfile(username!);
+        if (!address || !username) {
+            const payload: ActionGetResponse = {
+                icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
+                label: `Wallet or username Not Found`,
+                description: `Not a valid user`,
+                title: `Try again with a valid wallet address`,
+            }
+
+            return Response.json(payload, {
+                headers: ACTIONS_CORS_HEADERS
+            })
+        }
+
+        const nfts = await topNFTs(address!);
+
+        if (!user.login) {
+            const payload: ActionGetResponse = {
+                icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
+                label: `User Not Found`,
+                description: `Not a valid user ${username}`,
+                title: `Try again with a valid user`,
+            }
+
+            return Response.json(payload, {
+                headers: ACTIONS_CORS_HEADERS
+            })
+        }
+
+        const events = await getGHEvents(user.login);
+
+        const payload: ActionGetResponse = {
+            icon: user.avatar_url,
+            label: `Checking status for ${user.name}`,
+            description: `${user.login} has ${events.length} contribution on github in last week`,
+            title: events.length > 10 && nfts > 4 ? `${user.login} is a chad dev!` : `Inactive Contributor`,
+        }
+
+        return Response.json(payload, {
+            headers: ACTIONS_CORS_HEADERS
+        })
+    } else {
         const payload: ActionGetResponse = {
             icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
             label: `Wallet or username Not Found`,
@@ -22,33 +66,7 @@ export const GET = async (req: Request) => {
         })
     }
 
-    const nfts = await topNFTs(address!);
 
-    if (!user.login) {
-        const payload: ActionGetResponse = {
-            icon: 'https://t3.ftcdn.net/jpg/01/01/89/46/360_F_101894688_RVSZUtDfPR6Cr5eBDQI7Qo5pZ01jmyK3.jpg',
-            label: `User Not Found`,
-            description: `Not a valid user ${userName}`,
-            title: `Try again with a valid user`,
-        }
-
-        return Response.json(payload, {
-            headers: ACTIONS_CORS_HEADERS
-        })
-    }
-
-    const events = await getGHEvents(user.login);
-
-    const payload: ActionGetResponse = {
-        icon: user.avatar_url,
-        label: `Checking status for ${user.name}`,
-        description: `${user.login} has ${events.length} contribution on github in last week`,
-        title: events.length > 10 && nfts > 4 ? `${user.login} is a chad dev!` : `Inactive Contributor`,
-    }
-
-    return Response.json(payload, {
-        headers: ACTIONS_CORS_HEADERS
-    })
 }
 
 export const OPTIONS = GET;
