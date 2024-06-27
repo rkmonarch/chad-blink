@@ -40,7 +40,7 @@ export const GET = async (req: Request) => {
 
         const payload: ActionGetResponse = {
             icon: user.avatar_url,
-            label: `Checking status for ${user.name}`,
+            label: `Donate 0.1 SOL to ${user.login}`,
             description: `${user.login} has ${events.length} contribution on github in last week`,
             title: events.length > 10 && nfts > 4 ? `${user.login} is a chad dev!` : `Inactive Contributor`,
         }
@@ -63,7 +63,10 @@ export const OPTIONS = GET;
 export const POST = async (req: Request) => {
     const connection = new Connection(clusterApiUrl("mainnet-beta"));
     const url = new URL(req.url!);
-    const receiver = url.searchParams.get("address");
+    const userParams = url.searchParams.get("user");
+    const parts = userParams!.split("-");
+    const username = parts[0];
+    const receiver = parts.slice(1).join("-");
 
     try {
         const body: ActionPostRequest = await req.json();
