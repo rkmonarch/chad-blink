@@ -38,34 +38,41 @@ export const POST = async (req: Request) => {
         }
         const tokenList = await getWalletTokens(account.toBase58());
         console.log("tokenList", tokenList);
-        let transaction = new Transaction();
-
-        const MINT_ADDRESS = tokenList[0].address;
-        const burnIx = createBurnCheckedInstruction(
-            account, // PublicKey of Owner's Associated Token Account
-            new PublicKey(MINT_ADDRESS), // Public Key of the Token Mint Address
-            account, // Public Key of Owner's Wallet
-            0, // Number of tokens to burn
-            tokenList[0].decimals // Number of Decimals of the Token Mint
-        );
-
-        try {
-            transaction.feePayer = new PublicKey(account);
-            transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-            transaction.add(burnIx);
-
-            const payload: ActionPostResponse = await createPostResponse({
-                fields: {
-                    transaction,
-                    message: 'Burning tokens is irreversible and final. Proceed with caution.'
-                }
+        if (tokenList.length === 0) {
+            return new Response('no tokens found', {
+                status: 400,
+                headers: ACTIONS_CORS_HEADERS
             })
 
-            return Response.json(payload, { headers: ACTIONS_CORS_HEADERS })
-        } catch (error) {
-            console.log("error", error);
-        }
+        } else {
+            let transaction = new Transaction();
 
+            const MINT_ADDRESS = tokenList[0].address;
+            const burnIx = createBurnCheckedInstruction(
+                account, // PublicKey of Owner's Associated Token Account
+                new PublicKey(MINT_ADDRESS), // Public Key of the Token Mint Address
+                account, // Public Key of Owner's Wallet
+                0, // Number of tokens to burn
+                tokenList[0].decimals // Number of Decimals of the Token Mint
+            );
+
+            try {
+                transaction.feePayer = new PublicKey(account);
+                transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+                transaction.add(burnIx);
+
+                const payload: ActionPostResponse = await createPostResponse({
+                    fields: {
+                        transaction,
+                        message: 'Burning tokens is irreversible and final. Proceed with caution.'
+                    }
+                })
+
+                return Response.json(payload, { headers: ACTIONS_CORS_HEADERS })
+            } catch (err) {
+                return Response.json("unkown error account not found", { status: 400 })
+            }
+        }
     } catch (err) {
         return Response.json("unkown error account not found", { status: 400 })
     }
