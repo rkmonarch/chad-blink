@@ -28,9 +28,16 @@ interface WalletTokensResponse {
 export default async function getWalletTokens(address: string) {
     const filePath = 'src/utils/jupiter/strict.ts';
 
-    // Read and parse the token list
-    const fileData = fs.readFileSync(filePath, 'utf-8');
-    const tokenList = JSON.parse(fileData);
+    let tokenList: { address: string }[];
+
+    try {
+        // Read and parse the token list
+        const fileData = fs.readFileSync(filePath, 'utf-8');
+        tokenList = JSON.parse(fileData);
+    } catch (err) {
+        console.error('Error reading or parsing token list file:', err);
+        return [];
+    }
 
     // Extract token addresses
     const tokenAddresses = tokenList.map((token: { address: string }) => token.address);
