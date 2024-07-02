@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 
 interface Token {
     address: string;
@@ -26,8 +27,8 @@ interface WalletTokensResponse {
 }
 
 export default async function getWalletTokens(address: string) {
-    const filePath = 'src/utils/jupiter/strict.ts';
-
+    const fileName = 'strict.ts';
+    const filePath = path.resolve(__dirname, '../../../../../src/utils/jupiter', fileName);
     let tokenList: { address: string }[];
 
     try {
