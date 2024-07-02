@@ -37,6 +37,7 @@ export const POST = async (req: Request) => {
             })
         }
         const tokenList = await getWalletTokens(account.toBase58());
+        console.log("tokenList", tokenList);
         let transaction = new Transaction();
 
         const MINT_ADDRESS = tokenList[0].address;
@@ -66,6 +67,6 @@ export const POST = async (req: Request) => {
         }
 
     } catch (err) {
-        return Response.json("unkown error", { status: 400 })
+        return Response.json("unkown error account not found", { status: 400 })
     }
 }
