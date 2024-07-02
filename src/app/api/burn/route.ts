@@ -2,6 +2,7 @@ import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostR
 import { createBurnCheckedInstruction } from "@solana/spl-token";
 import { Connection, PublicKey, Transaction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js";
 import fs from 'fs';
+import path from "path";
 interface Token {
     address: string;
     decimals: number;
@@ -29,7 +30,9 @@ interface WalletTokensResponse {
 
 
 async function getWalletTokens(address: string) {
-    const filePath = 'src/utils/jupiter/strict.ts';
+    const fileName = 'strict.ts';
+    console.log("dirname", __dirname)
+    const filePath = path.resolve(__dirname, '../../../../../src/utils/jupiter', fileName);
 
     let tokenList: { address: string }[];
 
