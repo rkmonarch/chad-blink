@@ -27,14 +27,13 @@ interface WalletTokensResponse {
 }
 
 export default async function getWalletTokens(address: string) {
-    const fileName = 'strict.ts';
-    const filePath = path.resolve(__dirname, '../../../../../src/utils/jupiter', fileName);
+    const response = await fetch("https://token.jup.ag/strict");
+    const data = await response.json();
+    console.log("data", data.length)
     let tokenList: { address: string }[];
 
-    try {
-        // Read and parse the token list
-        const fileData = fs.readFileSync(filePath, 'utf-8');
-        tokenList = JSON.parse(fileData);
+    try {        
+        tokenList = data;
     } catch (err) {
         console.error('Error reading or parsing token list file:', err);
         return [];
