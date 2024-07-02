@@ -18,6 +18,9 @@ export const GET = async (req: Request) => {
 
     } catch (error) {
         console.error('Error fetching wallet tokens:', error);
-        return [];
+        return new Response('no tokens found', {
+            status: 400,
+            headers: ACTIONS_CORS_HEADERS
+        })
     }
 }
