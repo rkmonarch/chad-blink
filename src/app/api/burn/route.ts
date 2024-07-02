@@ -36,8 +36,8 @@ export const POST = async (req: Request) => {
                 headers: ACTIONS_CORS_HEADERS
             })
         }
-        const tokenList = await getWalletTokens(account.toBase58());
-        console.log("tokenList", tokenList);
+        const tokenList = await getWalletTokens(body.account);
+
         if (tokenList.length === 0) {
             return new Response('no tokens found', {
                 status: 400,
