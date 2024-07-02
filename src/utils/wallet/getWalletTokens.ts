@@ -5,6 +5,26 @@ interface Token {
     decimals: number;
 }
 
+interface TokenInfo {
+    decimals: number;
+    name: string;
+    symbol: string;
+    image: string;
+}
+
+interface TokenS {
+    address: string;
+    balance: number;
+    associated_account: string;
+    info: TokenInfo;
+}
+
+interface WalletTokensResponse {
+    success: boolean;
+    message: string;
+    result: TokenS[];
+}
+
 export default async function getWalletTokens(address: string) {
     const filePath = 'src/utils/jupiter/strict.ts';
 
@@ -24,7 +44,7 @@ export default async function getWalletTokens(address: string) {
             },
         });
 
-        const tokenData = await tokenResponse.json();
+        const tokenData:WalletTokensResponse = await tokenResponse.json();
         let emptyTokens: Token[] = [];
 
         for (let token of tokenData.result) {
