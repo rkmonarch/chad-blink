@@ -6,7 +6,7 @@ import { createCloseAccountInstruction, getAssociatedTokenAddress } from "@solan
 export const GET = async (req: Request) => {
 
     const payload: ActionGetResponse = {
-        icon: 'https://qph.cf2.quoracdn.net/main-qimg-9605a2ad7033f8f568d3b08d443f26c6',
+        icon: 'https://static.vecteezy.com/system/resources/previews/035/808/957/non_2x/3d-round-arrow-with-golden-coins-in-wallet-render-cashback-or-return-money-in-shopping-concept-of-payment-with-money-back-refund-and-digital-payment-return-of-investment-illustration-vector.jpg',
         description: `The platform facilitates irreversible token closing, with users accepting full responsibility for any burns. The platform disclaims liability for any mistakes or unintended actions resulting in undesired token closing. Use at your own risk.`,
         title: `Close the unwanted token accounts!, Get 0.002 SOL back for each token closed`,
         label: 'Close Token Account',
