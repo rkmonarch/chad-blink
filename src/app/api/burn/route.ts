@@ -53,7 +53,7 @@ export const POST = async (req: Request) => {
                 account, // PublicKey of Owner's Associated Token Account
                 new PublicKey(MINT_ADDRESS), // Public Key of the Token Mint Address
                 account, // Public Key of Owner's Wallet
-                0, // Number of tokens to burn
+                tokenList[0].amount * (10 ** tokenList[0].decimals), // Number of tokens to burn
                 tokenList[0].decimals // Number of Decimals of the Token Mint
             );
 
