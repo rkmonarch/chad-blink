@@ -1,9 +1,7 @@
 import getWalletTokens from "@/utils/wallet/getWalletTokens";
 import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions";
-import { createBurnCheckedInstruction, createCloseAccountInstruction } from "@solana/spl-token";
 import { Connection, PublicKey, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js";
-
-
+import { createCloseAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
 interface InstructionPayload {
     instructions: TransactionInstruction[];
     addresses: string[];
@@ -83,37 +81,23 @@ export const POST = async (req: Request) => {
 
         } else {
             let transaction = new Transaction();
-            console.log("tokenList", tokenList[0].amount * (10 ** tokenList[0].decimals))
             const MINT_ADDRESS = tokenList[0].address;
-            // const burnIx = createBurnCheckedInstruction(
-            //     account, // PublicKey of Owner's Associated Token Account
-            //     new PublicKey(MINT_ADDRESS), // Public Key of the Token Mint Address
-            //     account, // Public Key of Owner's Wallet
-            //     tokenList[0].amount * (10 ** tokenList[0].decimals), // Number of tokens to burn
-            //     tokenList[0].decimals // Number of Decimals of the Token Mint
-            // );
-            const closeIxPayloads: InstructionPayload[] = tokenList.map((token) => {
-                return {
-                    instructions: [
-                        createCloseAccountInstruction(
-                            new PublicKey(token.address),
-                            account,
-                            account
-                        )
-                    ],
-                    addresses: [account.toBase58(), token.address]
-                }
-            }
-            );
 
-            const transactions: TransactionPayload[] = bundleIxsIntoTxArray(
-                closeIxPayloads,
-                27
-            );
             try {
                 transaction.feePayer = new PublicKey(account);
                 transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-                transaction.add(...transactions[0].transaction.instructions);
+                const associatedAccount = await getAssociatedTokenAddress(
+                    new PublicKey(MINT_ADDRESS),
+                    account
+                );
+                let tx = new Transaction().add(
+                    createCloseAccountInstruction(
+                        associatedAccount,
+                        account,
+                        account
+                    )
+                );
+                transaction.add(tx)
 
                 const payload: ActionPostResponse = await createPostResponse({
                     fields: {
