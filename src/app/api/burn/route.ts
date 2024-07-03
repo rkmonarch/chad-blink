@@ -9,12 +9,12 @@ interface InstructionPayload {
     addresses: string[];
 }
 
-export interface TransactionPayload {
+interface TransactionPayload {
     transaction: Transaction;
     addresses: string[];
 }
 
-export function bundleIxsIntoTxArray(
+function bundleIxsIntoTxArray(
     instructions: InstructionPayload[],
     maxPerTransaction: number
 ) {
