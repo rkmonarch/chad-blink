@@ -1,7 +1,43 @@
 import getWalletTokens from "@/utils/wallet/getWalletTokens";
 import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions";
-import { createBurnCheckedInstruction } from "@solana/spl-token";
-import { Connection, PublicKey, Transaction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js";
+import { createBurnCheckedInstruction, createCloseAccountInstruction } from "@solana/spl-token";
+import { Connection, PublicKey, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js";
+
+
+interface InstructionPayload {
+    instructions: TransactionInstruction[];
+    addresses: string[];
+}
+
+export interface TransactionPayload {
+    transaction: Transaction;
+    addresses: string[];
+}
+
+export function bundleIxsIntoTxArray(
+    instructions: InstructionPayload[],
+    maxPerTransaction: number
+) {
+    const transactions: TransactionPayload[] = [];
+
+    while (instructions.length > 0) {
+        const ixs = instructions.splice(0, maxPerTransaction);
+        const payload: TransactionPayload = ixs.reduce(
+            (txPayload, ix) => {
+                txPayload.transaction.add(...ix.instructions);
+                txPayload.addresses.push(...ix.addresses);
+                return txPayload;
+            },
+            {
+                transaction: new Transaction(),
+                addresses: [] as string[],
+            }
+        );
+        transactions.push(payload);
+    }
+
+    return transactions;
+}
 
 export const GET = async (req: Request) => {
 
@@ -47,20 +83,37 @@ export const POST = async (req: Request) => {
 
         } else {
             let transaction = new Transaction();
-
+            console.log("tokenList", tokenList[0].amount * (10 ** tokenList[0].decimals))
             const MINT_ADDRESS = tokenList[0].address;
-            const burnIx = createBurnCheckedInstruction(
-                account, // PublicKey of Owner's Associated Token Account
-                new PublicKey(MINT_ADDRESS), // Public Key of the Token Mint Address
-                account, // Public Key of Owner's Wallet
-                tokenList[0].amount * (10 ** tokenList[0].decimals), // Number of tokens to burn
-                tokenList[0].decimals // Number of Decimals of the Token Mint
+            // const burnIx = createBurnCheckedInstruction(
+            //     account, // PublicKey of Owner's Associated Token Account
+            //     new PublicKey(MINT_ADDRESS), // Public Key of the Token Mint Address
+            //     account, // Public Key of Owner's Wallet
+            //     tokenList[0].amount * (10 ** tokenList[0].decimals), // Number of tokens to burn
+            //     tokenList[0].decimals // Number of Decimals of the Token Mint
+            // );
+            const closeIxPayloads: InstructionPayload[] = tokenList.map((token) => {
+                return {
+                    instructions: [
+                        createCloseAccountInstruction(
+                            new PublicKey(token.address),
+                            account,
+                            account
+                        )
+                    ],
+                    addresses: [account.toBase58(), token.address]
+                }
+            }
             );
 
+            const transactions: TransactionPayload[] = bundleIxsIntoTxArray(
+                closeIxPayloads,
+                27
+            );
             try {
                 transaction.feePayer = new PublicKey(account);
                 transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-                transaction.add(burnIx);
+                transaction.add(...transactions[0].transaction.instructions);
 
                 const payload: ActionPostResponse = await createPostResponse({
                     fields: {

@@ -53,7 +53,7 @@ export default async function getWalletTokens(address: string) {
         let emptyTokens: Token[] = [];
 
         for (let token of tokenData.result) {
-            if (token.balance != 0 && !tokenAddresses.includes(token.address)) {
+            if (token.balance === 0 && !tokenAddresses.includes(token.address)) {
                 emptyTokens.push({
                     address: token.address,
                     decimals: token.info.decimals,
