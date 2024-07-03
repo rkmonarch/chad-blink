@@ -37,7 +37,6 @@ export const POST = async (req: Request) => {
             })
         }
         const tokenList = await getWalletTokens(body.account);
-        console.log("tokenList", tokenList)
 
         if (tokenList.length === 0) {
             return new Response('no tokens found', {

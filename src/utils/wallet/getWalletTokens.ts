@@ -27,7 +27,6 @@ interface WalletTokensResponse {
 export default async function getWalletTokens(address: string) {
     const response = await fetch("https://token.jup.ag/strict");
     const data = await response.json();
-    console.log("data", data.length)
     let tokenList: { address: string }[];
 
     try {

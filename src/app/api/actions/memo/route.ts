@@ -13,7 +13,6 @@ export const GET = async (req: Request) => {
         title: `Try again with a valid wallet address`,
     }
 
-    console.log("User Params:", userParams);
     if (userParams) {
         const parts = userParams.split("-");
         const username = parts[0];
