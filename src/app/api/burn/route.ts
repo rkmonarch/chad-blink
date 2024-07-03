@@ -1,49 +1,15 @@
 import getWalletTokens from "@/utils/wallet/getWalletTokens";
 import { ACTIONS_CORS_HEADERS, ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions";
-import { Connection, PublicKey, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction, clusterApiUrl } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, clusterApiUrl } from "@solana/web3.js";
 import { createCloseAccountInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
-interface InstructionPayload {
-    instructions: TransactionInstruction[];
-    addresses: string[];
-}
-
-interface TransactionPayload {
-    transaction: Transaction;
-    addresses: string[];
-}
-
-function bundleIxsIntoTxArray(
-    instructions: InstructionPayload[],
-    maxPerTransaction: number
-) {
-    const transactions: TransactionPayload[] = [];
-
-    while (instructions.length > 0) {
-        const ixs = instructions.splice(0, maxPerTransaction);
-        const payload: TransactionPayload = ixs.reduce(
-            (txPayload, ix) => {
-                txPayload.transaction.add(...ix.instructions);
-                txPayload.addresses.push(...ix.addresses);
-                return txPayload;
-            },
-            {
-                transaction: new Transaction(),
-                addresses: [] as string[],
-            }
-        );
-        transactions.push(payload);
-    }
-
-    return transactions;
-}
 
 export const GET = async (req: Request) => {
 
     const payload: ActionGetResponse = {
         icon: 'https://qph.cf2.quoracdn.net/main-qimg-9605a2ad7033f8f568d3b08d443f26c6',
-        description: `The platform facilitates irreversible token burning, with users accepting full responsibility for any burns. The platform disclaims liability for any mistakes or unintended actions resulting in undesired burns. Use at your own risk.`,
-        title: `Token Burning Disclaimer`,
-        label: 'Start burning tokens now!',
+        description: `The platform facilitates irreversible token closing, with users accepting full responsibility for any burns. The platform disclaims liability for any mistakes or unintended actions resulting in undesired token closing. Use at your own risk.`,
+        title: `Close the unwanted token accounts!, Get 0.002 SOL back for each token closed`,
+        label: 'Close Token Account',
     }
 
     return Response.json(payload, {

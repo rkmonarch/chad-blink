@@ -37,7 +37,6 @@ export default async function getWalletTokens(address: string) {
         return [];
     }
 
-    // Extract token addresses
     const tokenAddresses = tokenList.map((token: { address: string }) => token.address);
 
     try {
