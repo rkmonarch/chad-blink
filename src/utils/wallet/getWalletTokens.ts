@@ -1,9 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-
 interface Token {
     address: string;
     decimals: number;
+    amount: number;
 }
 
 interface TokenInfo {
@@ -32,7 +30,7 @@ export default async function getWalletTokens(address: string) {
     console.log("data", data.length)
     let tokenList: { address: string }[];
 
-    try {        
+    try {
         tokenList = data;
     } catch (err) {
         console.error('Error reading or parsing token list file:', err);
@@ -51,14 +49,15 @@ export default async function getWalletTokens(address: string) {
             },
         });
 
-        const tokenData:WalletTokensResponse = await tokenResponse.json();
+        const tokenData: WalletTokensResponse = await tokenResponse.json();
         let emptyTokens: Token[] = [];
 
         for (let token of tokenData.result) {
-            if (token.balance === 0 && !tokenAddresses.includes(token.address)) {
+            if (token.balance != 0 && !tokenAddresses.includes(token.address)) {
                 emptyTokens.push({
                     address: token.address,
                     decimals: token.info.decimals,
+                    amount: token.balance,
                 });
             }
         }
